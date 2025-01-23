@@ -2,8 +2,9 @@ package com.reliaquest.api.service;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
+import com.reliaquest.api.controller.request.EmployeeCreationInput;
 import com.reliaquest.api.exception.APIException;
 import com.reliaquest.api.model.Employee;
 import java.util.List;
@@ -89,5 +90,21 @@ class EmployeeServiceTest {
         assertEquals(1000, receivedEmployees.get(1).getSalary());
         assertEquals("Jake Luther", receivedEmployees.get(0).getName());
         assertEquals("John Doe", receivedEmployees.get(1).getName());
+    }
+
+    @Test
+    void itShouldCreatedEmployeeBasedOnGivenInput() {
+        EmployeeCreationInput input = new EmployeeCreationInput("John", 9878374, 25, "Tech lead", "john@rq.com");
+        Employee mockCreatedEmployee = Employee.newEmployee(input);
+        when(employeeServerApiClient.post(any(), any(), any()))
+                .thenReturn(CompletableFuture.completedFuture(mockCreatedEmployee));
+
+        Employee createdEmployee = employeeService.createEmployee(input);
+
+        verify(employeeServerApiClient, times(1)).post(any(), any(), any());
+        assertEquals(mockCreatedEmployee.getName(), createdEmployee.getName());
+        assertEquals(mockCreatedEmployee.getAge(), createdEmployee.getAge());
+        assertEquals(mockCreatedEmployee.getEmail(), createdEmployee.getEmail());
+        assertEquals(mockCreatedEmployee.getTitle(), createdEmployee.getTitle());
     }
 }
