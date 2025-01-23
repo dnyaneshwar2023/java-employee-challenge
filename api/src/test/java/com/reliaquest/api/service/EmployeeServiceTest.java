@@ -95,7 +95,9 @@ class EmployeeServiceTest {
     @Test
     void itShouldCreatedEmployeeBasedOnGivenInput() {
         EmployeeCreationInput input = new EmployeeCreationInput("John", 9878374, 25, "Tech lead", "john@rq.com");
+
         Employee mockCreatedEmployee = Employee.newEmployee(input);
+
         when(employeeServerApiClient.post(any(), any(), any()))
                 .thenReturn(CompletableFuture.completedFuture(mockCreatedEmployee));
 
@@ -106,5 +108,28 @@ class EmployeeServiceTest {
         assertEquals(mockCreatedEmployee.getAge(), createdEmployee.getAge());
         assertEquals(mockCreatedEmployee.getEmail(), createdEmployee.getEmail());
         assertEquals(mockCreatedEmployee.getTitle(), createdEmployee.getTitle());
+    }
+
+    @Test
+    void itShouldReturnEmployeeNameIfEmployeeIsDeleted() {
+        Employee mockEmployee =
+                new Employee(UUID.randomUUID(), "John", 1000, 22, "Software Engineer", "john@gmail.com");
+
+        when(employeeServerApiClient.get(any(), any())).thenReturn(CompletableFuture.completedFuture(mockEmployee));
+        when(employeeServerApiClient.delete(any(), any())).thenReturn(CompletableFuture.completedFuture(true));
+
+        String deletedEmployeeName =
+                employeeService.deleteEmployee(mockEmployee.getId().toString());
+
+        assertEquals(mockEmployee.getName(), deletedEmployeeName);
+    }
+
+    @Test
+    void itShouldThrowExceptionIfEmployeeIsNotDeleted() {
+        when(employeeServerApiClient.get(any(), any())).thenReturn(CompletableFuture.completedFuture(null));
+        when(employeeServerApiClient.delete(any(), any())).thenReturn(CompletableFuture.completedFuture(false));
+
+        assertThrows(
+                APIException.class, () -> employeeService.deleteEmployee("abcbc123-4567-890a-bcde-fghij123456789"));
     }
 }

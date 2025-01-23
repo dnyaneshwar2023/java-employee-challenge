@@ -3,10 +3,13 @@ package com.reliaquest.api.service;
 import static com.reliaquest.api.utils.StringUtils.containsString;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.reliaquest.api.controller.request.DeleteEmployeeInput;
 import com.reliaquest.api.controller.request.EmployeeCreationInput;
+import com.reliaquest.api.exception.APIException;
 import com.reliaquest.api.model.Employee;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -56,12 +59,29 @@ public class EmployeeService {
     }
 
     public Employee createEmployee(EmployeeCreationInput input) {
-        log.debug("Creating employee with input {}", input);
-
         Employee employeeToAdd = Employee.newEmployee(input);
 
         return employeeServerApiClient
                 .post("/api/v1/employee", employeeToAdd, new TypeReference<Employee>() {})
                 .join();
+    }
+
+    public String deleteEmployee(String id) {
+        log.debug("Deleting employee with ID: {}", id);
+        Employee employee = getEmployeeById(id);
+
+        Boolean isDeleted = Objects.nonNull(employee)
+                ? employeeServerApiClient
+                        .delete("/api/v1/employee", new DeleteEmployeeInput(employee.getName()))
+                        .join()
+                : false;
+
+        if (isDeleted) {
+            log.debug("Employee deleted with ID: {}", employee.getId());
+            return employee.getName();
+        } else {
+            log.error("Delete Employee: Employee not found with ID: {}", id);
+            throw new APIException(400, "Employee not found with ID %s".formatted(id));
+        }
     }
 }

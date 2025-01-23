@@ -72,4 +72,29 @@ class EmployeeServerAPIClient {
             throw new RuntimeException(e);
         }
     }
+
+    public CompletableFuture<Boolean> delete(String uri, Object body) {
+        try {
+            HttpRequest request = HttpRequest.newBuilder(URI.create(baseUrl + uri))
+                    .method("DELETE", HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(body)))
+                    .header("Content-Type", "application/json")
+                    .build();
+
+            return httpClient
+                    .sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                    .thenApply(response -> {
+                        if (response.statusCode() != 200) {
+                            throw new APIException(response.statusCode(), response.body());
+                        }
+                        try {
+                            JsonNode responseString = objectMapper.readValue(response.body(), JsonNode.class);
+                            return responseString.get("data").asBoolean();
+                        } catch (JsonProcessingException e) {
+                            throw new RuntimeException(e);
+                        }
+                    });
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }
