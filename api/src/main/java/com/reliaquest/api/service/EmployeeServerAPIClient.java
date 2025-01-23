@@ -33,7 +33,7 @@ class EmployeeServerAPIClient {
                 HttpRequest.newBuilder(URI.create(baseUrl + uri)).GET().build();
         return httpClient
                 .sendAsync(request, HttpResponse.BodyHandlers.ofString())
-                .thenApply(response -> {
+                .thenApplyAsync(response -> {
                     if (response.statusCode() != 200) {
                         throw new APIException(response.statusCode(), response.body());
                     }
@@ -56,7 +56,7 @@ class EmployeeServerAPIClient {
 
             return httpClient
                     .sendAsync(request, HttpResponse.BodyHandlers.ofString())
-                    .thenApply(response -> {
+                    .thenApplyAsync(response -> {
                         if (response.statusCode() != 200) {
                             throw new APIException(response.statusCode(), response.body());
                         }
@@ -82,7 +82,7 @@ class EmployeeServerAPIClient {
 
             return httpClient
                     .sendAsync(request, HttpResponse.BodyHandlers.ofString())
-                    .thenApply(response -> {
+                    .thenApplyAsync(response -> {
                         if (response.statusCode() != 200) {
                             throw new APIException(response.statusCode(), response.body());
                         }
