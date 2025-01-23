@@ -17,14 +17,17 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class EmployeeService {
     private final EmployeeServerAPIClient employeeServerApiClient;
-    private final TypeReference<List<Employee>> typeReference = new TypeReference<>() {};
+    private static final TypeReference<List<Employee>> employeeListTypeReference = new TypeReference<>() {};
+    private static final TypeReference<Employee> employeeTypeReference = new TypeReference<>() {};
 
     public EmployeeService(EmployeeServerAPIClient employeeServerApiClient) {
         this.employeeServerApiClient = employeeServerApiClient;
     }
 
     public List<Employee> getAllEmployees() {
-        return employeeServerApiClient.get("/api/v1/employee", typeReference).join();
+        return employeeServerApiClient
+                .get("/api/v1/employee", employeeListTypeReference)
+                .join();
     }
 
     public List<Employee> getEmployeesByNameSearch(String searchString) {
@@ -47,7 +50,7 @@ public class EmployeeService {
         log.debug("Getting employee for ID: {}", id);
 
         return employeeServerApiClient
-                .get("/api/v1/employee/" + id, new TypeReference<Employee>() {})
+                .get("/api/v1/employee/" + id, employeeTypeReference)
                 .join();
     }
 
@@ -64,7 +67,7 @@ public class EmployeeService {
 
     public Employee createEmployee(EmployeeCreationInput input) {
         return employeeServerApiClient
-                .post("/api/v1/employee", input, new TypeReference<Employee>() {})
+                .post("/api/v1/employee", input, employeeTypeReference)
                 .join();
     }
 
@@ -72,7 +75,7 @@ public class EmployeeService {
         log.debug("Deleting employee with ID: {}", id);
         Employee employee = getEmployeeById(id);
 
-        Boolean isDeleted = Objects.nonNull(employee)
+        boolean isDeleted = Objects.nonNull(employee)
                 ? employeeServerApiClient
                         .delete("/api/v1/employee", new DeleteEmployeeInput(employee.getName()))
                         .join()
