@@ -28,6 +28,7 @@ class EmployeeServiceTest {
         List<Employee> receivedEmployees = employeeService.getAllEmployees();
 
         assertEquals(3, receivedEmployees.size());
+        verify(employeeServerApiClient, times(1)).get(any(), any());
     }
 
     @Test
@@ -36,7 +37,9 @@ class EmployeeServiceTest {
         when(employeeServerApiClient.get(any(), any())).thenReturn(CompletableFuture.completedFuture(mockEmployeeList));
 
         List<Employee> receivedEmployees = employeeService.getEmployeesByNameSearch(searchString);
+
         assertEquals(2, receivedEmployees.size());
+        verify(employeeServerApiClient, times(1)).get(any(), any());
     }
 
     @Test
@@ -44,14 +47,19 @@ class EmployeeServiceTest {
         when(employeeServerApiClient.get(any(), any())).thenReturn(CompletableFuture.completedFuture(mockEmployeeList));
 
         Integer highestSalary = employeeService.getHighestSalaryOfEmployees();
+
         assertEquals(2000, highestSalary);
+        verify(employeeServerApiClient, times(1)).get(any(), any());
     }
 
     @Test
     void itShouldReturnZeroAsHighestSalaryWhenNoEmployeesArePresent() {
         when(employeeServerApiClient.get(any(), any())).thenReturn(CompletableFuture.completedFuture(List.of()));
+
         Integer highestSalary = employeeService.getHighestSalaryOfEmployees();
+
         assertEquals(0, highestSalary);
+        verify(employeeServerApiClient, times(1)).get(any(), any());
     }
 
     @Test
@@ -84,6 +92,7 @@ class EmployeeServiceTest {
         assertEquals(2, receivedEmployees.size());
         assertEquals("Jake Luther", receivedEmployees.get(0));
         assertEquals("John Doe", receivedEmployees.get(1));
+        verify(employeeServerApiClient, times(1)).get(any(), any());
     }
 
     @Test
@@ -116,6 +125,8 @@ class EmployeeServiceTest {
                 employeeService.deleteEmployee(mockEmployee.getId().toString());
 
         assertEquals(mockEmployee.getName(), deletedEmployeeName);
+        verify(employeeServerApiClient, times(1)).get(any(), any());
+        verify(employeeServerApiClient, times(1)).delete(any(), any());
     }
 
     @Test
@@ -125,5 +136,6 @@ class EmployeeServiceTest {
 
         assertThrows(
                 APIException.class, () -> employeeService.deleteEmployee("abcbc123-4567-890a-bcde-fghij123456789"));
+        verify(employeeServerApiClient, times(0)).delete(any(), any());
     }
 }
