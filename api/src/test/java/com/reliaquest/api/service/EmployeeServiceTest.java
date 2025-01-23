@@ -36,7 +36,6 @@ class EmployeeServiceTest {
         when(employeeServerApiClient.get(any(), any())).thenReturn(CompletableFuture.completedFuture(mockEmployeeList));
 
         List<Employee> receivedEmployees = employeeService.getEmployeesByNameSearch(searchString);
-
         assertEquals(2, receivedEmployees.size());
     }
 
@@ -45,16 +44,13 @@ class EmployeeServiceTest {
         when(employeeServerApiClient.get(any(), any())).thenReturn(CompletableFuture.completedFuture(mockEmployeeList));
 
         Integer highestSalary = employeeService.getHighestSalaryOfEmployees();
-
         assertEquals(2000, highestSalary);
     }
 
     @Test
     void itShouldReturnZeroAsHighestSalaryWhenNoEmployeesArePresent() {
         when(employeeServerApiClient.get(any(), any())).thenReturn(CompletableFuture.completedFuture(List.of()));
-
         Integer highestSalary = employeeService.getHighestSalaryOfEmployees();
-
         assertEquals(0, highestSalary);
     }
 
@@ -83,13 +79,11 @@ class EmployeeServiceTest {
         Integer k = 2;
         when(employeeServerApiClient.get(any(), any())).thenReturn(CompletableFuture.completedFuture(mockEmployeeList));
 
-        List<Employee> receivedEmployees = employeeService.getTopEmployeesBySalary(k);
+        List<String> receivedEmployees = employeeService.getTopEmployeesBySalary(k);
 
         assertEquals(2, receivedEmployees.size());
-        assertEquals(2000, receivedEmployees.get(0).getSalary());
-        assertEquals(1000, receivedEmployees.get(1).getSalary());
-        assertEquals("Jake Luther", receivedEmployees.get(0).getName());
-        assertEquals("John Doe", receivedEmployees.get(1).getName());
+        assertEquals("Jake Luther", receivedEmployees.get(0));
+        assertEquals("John Doe", receivedEmployees.get(1));
     }
 
     @Test

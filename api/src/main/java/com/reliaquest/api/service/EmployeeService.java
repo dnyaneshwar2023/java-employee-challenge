@@ -51,10 +51,14 @@ public class EmployeeService {
                 .join();
     }
 
-    public List<Employee> getTopEmployeesBySalary(Integer limit) {
-        return getAllEmployees().stream()
+    public List<String> getTopEmployeesBySalary(Integer limit) {
+        List<Employee> allEmployees = getAllEmployees();
+        log.debug("Returning top {} earning employees out of {} employees", limit, allEmployees.size());
+
+        return allEmployees.stream()
                 .sorted(Comparator.comparing(Employee::getSalary).reversed())
                 .limit(limit)
+                .map(Employee::getName)
                 .toList();
     }
 
