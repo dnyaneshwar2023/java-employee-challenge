@@ -33,8 +33,16 @@ public class EmployeeService {
 
     public Integer getHighestSalaryOfEmployees() {
         List<Employee> allEmployees = getAllEmployees();
-        log.debug("Getting highest salary out of {} employees", allEmployees.size());
+        log.debug("Get highest salary of employee out of {} employees", allEmployees.size());
 
         return allEmployees.stream().mapToInt(Employee::getSalary).max().orElse(0);
+    }
+
+    public Employee getEmployeeById(String id) {
+        log.debug("Getting employee for ID: {}", id);
+
+        return employeeServerApiClient
+                .get("/api/v1/employee/" + id, new TypeReference<Employee>() {})
+                .join();
     }
 }

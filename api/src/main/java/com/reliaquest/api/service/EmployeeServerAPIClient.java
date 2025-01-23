@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.reliaquest.api.exception.APIException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -33,6 +34,9 @@ class EmployeeServerAPIClient {
         return httpClient
                 .sendAsync(request, HttpResponse.BodyHandlers.ofString())
                 .thenApply(response -> {
+                    if (response.statusCode() != 200) {
+                        throw new APIException(response.statusCode(), response.body());
+                    }
                     String body = response.body();
                     try {
                         JsonNode responseString = objectMapper.readValue(body, JsonNode.class);
