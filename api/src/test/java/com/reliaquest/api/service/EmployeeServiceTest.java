@@ -14,17 +14,26 @@ import org.mockito.Mockito;
 class EmployeeServiceTest {
     private final EmployeeServerAPIClient employeeServerApiClient = Mockito.mock(EmployeeServerAPIClient.class);
     private EmployeeService employeeService = new EmployeeService(employeeServerApiClient);
+    List<Employee> mockEmployeeList = List.of(
+            new Employee(UUID.randomUUID(), "John Doe", 1000, 22, "Software Engineer", "john@gmail.com"),
+            new Employee(UUID.randomUUID(), "Jake Luther", 2000, 22, "Security Engineer", "jake@gmail.com"),
+            new Employee(UUID.randomUUID(), "Will Jacks", 500, 22, "Software Engineer", "will@gmail.com"));
 
     @Test
     void itShouldGetAllEmployeesFromServer() {
-
-        List<Employee> mockEmployeeList =
-                List.of(new Employee(UUID.randomUUID(), "John", 1000, 22, "Software Engineer", "john@gmail.com"));
-
         when(employeeServerApiClient.get(any(), any())).thenReturn(CompletableFuture.completedFuture(mockEmployeeList));
 
         List<Employee> receivedEmployees = employeeService.getAllEmployees();
 
-        assertEquals(receivedEmployees.size(), 1);
+        assertEquals(3, receivedEmployees.size());
+    }
+
+    @Test
+    void itShouldReturnEmployeesMatchingToGivenInput() {
+        String searchString = "Ja";
+        when(employeeServerApiClient.get(any(), any())).thenReturn(CompletableFuture.completedFuture(mockEmployeeList));
+
+        List<Employee> receivedEmployees = employeeService.getEmployeesByNameSearch(searchString);
+        assertEquals(2, receivedEmployees.size());
     }
 }

@@ -1,11 +1,15 @@
 package com.reliaquest.api.service;
 
+import static com.reliaquest.api.utils.StringUtils.containsString;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.reliaquest.api.model.Employee;
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 @Component
+@Slf4j
 public class EmployeeService {
     private final EmployeeServerAPIClient employeeServerApiClient;
     private final TypeReference<List<Employee>> typeReference = new TypeReference<>() {};
@@ -16,5 +20,14 @@ public class EmployeeService {
 
     public List<Employee> getAllEmployees() {
         return employeeServerApiClient.get("/api/v1/employee", typeReference).join();
+    }
+
+    public List<Employee> getEmployeesByNameSearch(String searchString) {
+        List<Employee> employees = getAllEmployees();
+        log.debug("Searching for input string: {} in {} employees", searchString, employees.size());
+
+        return employees.stream()
+                .filter(e -> containsString(e.getName(), searchString))
+                .toList();
     }
 }
