@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import com.reliaquest.api.controller.request.DeleteEmployeeInput;
 import com.reliaquest.api.controller.request.EmployeeCreationInput;
 import com.reliaquest.api.exception.APIException;
 import com.reliaquest.api.model.Employee;
@@ -11,11 +12,16 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 class EmployeeServiceTest {
     private final EmployeeServerAPIClient employeeServerApiClient = Mockito.mock(EmployeeServerAPIClient.class);
     private final EmployeeService employeeService = new EmployeeService(employeeServerApiClient);
+    private static final String EMPLOYEE_SERVER_API_PATH = "/api/v1/employee";
+
+    private final ArgumentCaptor<String> urlCaptor = ArgumentCaptor.forClass(String.class);
+
     List<Employee> mockEmployeeList = List.of(
             new Employee(UUID.randomUUID(), "John Doe", 1000, 22, "Software Engineer", "john@gmail.com"),
             new Employee(UUID.randomUUID(), "Jake Luther", 2000, 22, "Security Engineer", "jake@gmail.com"),
@@ -28,7 +34,8 @@ class EmployeeServiceTest {
         List<Employee> receivedEmployees = employeeService.getAllEmployees();
 
         assertEquals(3, receivedEmployees.size());
-        verify(employeeServerApiClient, times(1)).get(any(), any());
+        verify(employeeServerApiClient, times(1)).get(urlCaptor.capture(), any());
+        assertEquals(EMPLOYEE_SERVER_API_PATH, urlCaptor.getValue());
     }
 
     @Test
@@ -39,7 +46,8 @@ class EmployeeServiceTest {
         List<Employee> receivedEmployees = employeeService.getEmployeesByNameSearch(searchString);
 
         assertEquals(2, receivedEmployees.size());
-        verify(employeeServerApiClient, times(1)).get(any(), any());
+        verify(employeeServerApiClient, times(1)).get(urlCaptor.capture(), any());
+        assertEquals(EMPLOYEE_SERVER_API_PATH, urlCaptor.getValue());
     }
 
     @Test
@@ -49,7 +57,8 @@ class EmployeeServiceTest {
         Integer highestSalary = employeeService.getHighestSalaryOfEmployees();
 
         assertEquals(2000, highestSalary);
-        verify(employeeServerApiClient, times(1)).get(any(), any());
+        verify(employeeServerApiClient, times(1)).get(urlCaptor.capture(), any());
+        assertEquals(EMPLOYEE_SERVER_API_PATH, urlCaptor.getValue());
     }
 
     @Test
@@ -59,7 +68,8 @@ class EmployeeServiceTest {
         Integer highestSalary = employeeService.getHighestSalaryOfEmployees();
 
         assertEquals(0, highestSalary);
-        verify(employeeServerApiClient, times(1)).get(any(), any());
+        verify(employeeServerApiClient, times(1)).get(urlCaptor.capture(), any());
+        assertEquals(EMPLOYEE_SERVER_API_PATH, urlCaptor.getValue());
     }
 
     @Test
@@ -72,6 +82,8 @@ class EmployeeServiceTest {
         Employee receivedEmployee = employeeService.getEmployeeById(id);
 
         assertEquals(mockEmployee, receivedEmployee);
+        verify(employeeServerApiClient, times(1)).get(urlCaptor.capture(), any());
+        assertEquals(EMPLOYEE_SERVER_API_PATH + "/" + id, urlCaptor.getValue());
     }
 
     @Test
@@ -92,7 +104,8 @@ class EmployeeServiceTest {
         assertEquals(2, receivedEmployees.size());
         assertEquals("Jake Luther", receivedEmployees.get(0));
         assertEquals("John Doe", receivedEmployees.get(1));
-        verify(employeeServerApiClient, times(1)).get(any(), any());
+        verify(employeeServerApiClient, times(1)).get(urlCaptor.capture(), any());
+        assertEquals(EMPLOYEE_SERVER_API_PATH, urlCaptor.getValue());
     }
 
     @Test
@@ -106,11 +119,17 @@ class EmployeeServiceTest {
 
         Employee createdEmployee = employeeService.createEmployee(input);
 
-        verify(employeeServerApiClient, times(1)).post(any(), any(), any());
+        ArgumentCaptor<EmployeeCreationInput> employeeCreationInputArgumentCaptor =
+                ArgumentCaptor.forClass(EmployeeCreationInput.class);
+        verify(employeeServerApiClient, times(1))
+                .post(urlCaptor.capture(), employeeCreationInputArgumentCaptor.capture(), any());
+        assertEquals(input, employeeCreationInputArgumentCaptor.getValue());
         assertEquals(mockCreatedEmployee.getName(), createdEmployee.getName());
         assertEquals(mockCreatedEmployee.getAge(), createdEmployee.getAge());
         assertEquals(mockCreatedEmployee.getEmail(), createdEmployee.getEmail());
         assertEquals(mockCreatedEmployee.getTitle(), createdEmployee.getTitle());
+        assertEquals(mockCreatedEmployee.getSalary(), createdEmployee.getSalary());
+        assertEquals(EMPLOYEE_SERVER_API_PATH, urlCaptor.getValue());
     }
 
     @Test
@@ -126,7 +145,12 @@ class EmployeeServiceTest {
 
         assertEquals(mockEmployee.getName(), deletedEmployeeName);
         verify(employeeServerApiClient, times(1)).get(any(), any());
-        verify(employeeServerApiClient, times(1)).delete(any(), any());
+        ArgumentCaptor<DeleteEmployeeInput> deleteEmployeeInputArgumentCaptor =
+                ArgumentCaptor.forClass(DeleteEmployeeInput.class);
+        verify(employeeServerApiClient, times(1))
+                .delete(urlCaptor.capture(), deleteEmployeeInputArgumentCaptor.capture());
+        assertEquals(EMPLOYEE_SERVER_API_PATH, urlCaptor.getValue());
+        assertEquals("John", deleteEmployeeInputArgumentCaptor.getValue().name());
     }
 
     @Test
