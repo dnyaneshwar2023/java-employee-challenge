@@ -63,10 +63,8 @@ public class EmployeeService {
     }
 
     public Employee createEmployee(EmployeeCreationInput input) {
-        Employee employeeToAdd = Employee.newEmployee(input);
-
         return employeeServerApiClient
-                .post("/api/v1/employee", employeeToAdd, new TypeReference<Employee>() {})
+                .post("/api/v1/employee", input, new TypeReference<Employee>() {})
                 .join();
     }
 
